@@ -1,75 +1,188 @@
-# Building a SOC + Honeynet in Azure (Live Traffic)
-![Cloud Honeynet / SOC](https://i.imgur.com/ZWxe03e.jpg)
+# Creating a SOC with Honeynet within Microsoft Azure
 
 ## Introduction
 
-In this project, I build a mini honeynet in Azure and ingest log sources from various resources into a Log Analytics workspace, which is then used by Microsoft Sentinel to build attack maps, trigger alerts, and create incidents. I measured some security metrics in the insecure environment for 24 hours, apply some security controls to harden the environment, measure metrics for another 24 hours, then show the results below. The metrics we will show are:
+For this project, I utilized Microsoft Azure to create a honeynet and ingest logs from various resources into a Log Analytics workspace. From there, I used Microsoft Sentinel to create attack maps, trigger alerts, and incidents.  I then gathered metrics over 24 hours in the insecure environment. From there I applied security controls to harden the environment and repeated the 24 hours to gather more metrics in the secured environment. I then used the metrics to geographically map the attacker’s locations and summarize the overall improvement after applying security controls. In addition, I also conducted a series of simulated attacks against the system.
+
+<br />
+
+## Metrics Gathered
 
 - SecurityEvent (Windows Event Logs)
 - Syslog (Linux Event Logs)
 - SecurityAlert (Log Analytics Alerts Triggered)
-- SecurityIncident (Incidents created by Sentinel)
+- SecurityIncident (Incidents Created by Sentinel)
 - AzureNetworkAnalytics_CL (Malicious Flows allowed into our honeynet)
 
-## Architecture Before Hardening / Security Controls
-![Architecture Diagram](https://i.imgur.com/aBDwnKb.jpg)
+<br />
 
-## Architecture After Hardening / Security Controls
-![Architecture Diagram](https://i.imgur.com/YQNa9Pp.jpg)
+## The Architecture of the Lab
 
-The architecture of the mini honeynet in Azure consists of the following components:
+![Cloud Honeynet / SOC](https://i.imgur.com/jFMrONH.png)
+### Technologies, Regulations, and Azure Components Utilized:
 
 - Virtual Network (VNet)
 - Network Security Group (NSG)
-- Virtual Machines (2 windows, 1 linux)
-- Log Analytics Workspace
+- Virtual Machines (2 Windows, 1 Linux) 
+- Log Analytics Workspace with KQL Queries
 - Azure Key Vault
 - Azure Storage Account
 - Microsoft Sentinel
+- Microsoft Defender for the Cloud
+- Windows Remote Desktop
+- Command Line Interface
+- PowerShell
+- NIST SP 800-53 r4
+- NIST SP 800-61 r2
 
-For the "BEFORE" metrics, all resources were originally deployed, exposed to the internet. The Virtual Machines had both their Network Security Groups and built-in firewalls wide open, and all other resources are deployed with public endpoints visible to the Internet; aka, no use for Private Endpoints.
+<br />
 
-For the "AFTER" metrics, Network Security Groups were hardened by blocking ALL traffic with the exception of my admin workstation, and all other resources were protected by their built-in firewalls as well as Private Endpoint
+## Architecture Before Hardening / Security Controls
+![Architecture Diagram](https://i.imgur.com/x6UdJrr.png)
 
-## Attack Maps Before Hardening / Security Controls
-![NSG Allowed Inbound Malicious Flows](https://i.imgur.com/1qvswSX.png)<br>
-![Linux Syslog Auth Failures](https://i.imgur.com/G1YgZt6.png)<br>
-![Windows RDP/SMB Auth Failures](https://i.imgur.com/ESr9Dlv.png)<br>
+Initially, all resources were deployed with high exposure for the "BEFORE" metrics. The VMs were configured with their NSGs and built-in firewalls set to allow all traffic, and all other resources were also deployed with public endpoints that were visible to the internet. Consequently, Private Endpoints were not utilized.
+
+<br />
+
+## Architecture After Hardening / Security Controls
+![Architecture Diagram](https://i.imgur.com/l91mgkr.png)
+
+To improve the "AFTER" metrics, NSGs were made more secure by prohibiting ALL traffic except for my admin workstation, while all other resources were safeguarded by their built-in firewalls in addition to Private Endpoints.
+
+<br />
+
+## Attack Maps BEFORE Hardening / Security Controls
+![NSG Allowed Inbound Malicious Flows](https://i.imgur.com/hP91wFgl.jpg)
+
+<br />
+
+![Linux Syslog Auth Failures](https://i.imgur.com/Lwbtvrfl.jpg)
+
+<br />
+
+![Windows RDP/SMB Auth Failures](https://i.imgur.com/F7XxAhql.jpg)
+
+<br />
+
+![MSSQL Auth Failures](https://i.imgur.com/fmAeMdfl.jpg)
+
+<br />
 
 ## Metrics Before Hardening / Security Controls
 
-The following table shows the metrics we measured in our insecure environment for 24 hours:
-Start Time 2023-03-15 17:04:29
-Stop Time 2023-03-16 17:04:29
+Measured metrics in the insecure environment for 24 hours:
+Start Time 2023-04-09 11:30 AM EST
+Stop Time 2023-04-10 11:30 AM EST
 
-| Metric                   | Count
-| ------------------------ | -----
-| SecurityEvent            | 19470
-| Syslog                   | 3028
-| SecurityAlert            | 10
-| SecurityIncident         | 348
-| AzureNetworkAnalytics_CL | 843
+| Metric                                          | Count
+| ----------------------------------------------- | -----
+| SecurityEvents (Windows VMs)                    | 34,063
+| Syslog (Linux VM)                               | 7783
+| SecurityAlert (Microsoft Defender for Cloud)    | 12
+| SecurityIncident (Sentinel Incidents)           | 295
+| NSG Inbound Malicious Flows Allowed             | 624
 
-## Attack Maps Before Hardening / Security Controls
+<br />
 
-```All map queries actually returned no results due to no instances of malicious activity for the 24 hour period after hardening.```
+## Hardening Steps
+
+The initial 24-hour study revealed that the lab was vulnerable to multiple threats due to its visibility on the public internet. To address these findings, I activated NIST SP 800-53 r4 within the compliance section of Microsoft Defender and focused on fulfilling the compliance standards associated with SC.7.*. Additional assessments for SC-7 - Boundary Protection.
+
+![Hardening](https://i.imgur.com/Ac5PNYQl.jpg)
+       
+<br />
+
+## Attack Maps AFTER Hardening / Security Controls
+
+```There were no results to display for the 24-hour repeat map queries following the hardening of the assets. ```
+
+<br />
 
 ## Metrics After Hardening / Security Controls
 
-The following table shows the metrics we measured in our environment for another 24 hours, but after we have applied security controls:
-Start Time 2023-03-18 15:37
-Stop Time	2023-03-19 15:37
+Measured metrics in the secure environment for another 24 hours after applying security controls:
+Start Time 2023-04-10 11:30 AM EST
+Stop Time	2023-04-11 11:30 AM EST
 
-| Metric                   | Count
-| ------------------------ | -----
-| SecurityEvent            | 8778
-| Syslog                   | 25
-| SecurityAlert            | 0
-| SecurityIncident         | 0
-| AzureNetworkAnalytics_CL | 0
+| Metric                                          | Count
+| ----------------------------------------------- | -----
+| SecurityEvents (Windows VMs)                    | 11,679
+| Syslog (Linux VM)                               | 33
+| SecurityAlert (Microsoft Defender for Cloud)    | 0
+| SecurityIncident (Sentinel Incidents)           | 10
+| NSG Inbound Malicious Flows Allowed             | 30
+
+<br />
+
+## Overall Improvement
+
+| Metric                                          | Count
+| ----------------------------------------------- | -----
+| SecurityEvents (Windows VMs)                    | -65.71%
+| Syslog (Linux VM)                               | -99.58%
+| SecurityAlert (Microsoft Defender for Cloud)    | -100%
+| SecurityIncident (Sentinel Incidents)           | -96.61%
+| NSG Inbound Malicious Flows Allowed             | -95.19%
+
+![48 Hour Improvement](https://i.imgur.com/eUzTyCDl.png)
+
+<br />
+
+## Simulated Attacks
+
+I also took the opportunity to simulate specific attacks via PowerShell scripts or by manually triggering events. The results were observed in Log Analytics Workspace and Sentinel Incident Creation.  
+
+- Linux Brute Force Attempt 
+- AAD Brute Force Success 
+- Windows Brute Force Success
+- Malware Detection (EICAR Test File) 
+- Privilege Escalation  
+
+![Attacker](https://i.imgur.com/CpoVQw7l.png)
+
+<br />
+
+## Utilizing NIST 800.61r2 Computer Incident Handling Guide
+
+For each simulated attack I then practiced incident responses following NIST SP 800-61 r2.
+
+![NIST 800.61](https://i.imgur.com/6PTG7c0l.png)
+
+Each organization will have policies related to an incident response that should be followed. This event is just a walkthrough for possible actions to take in the detection of malware on a workstation.  
+
+#### Preparation
+
+- The Azure lab was set up to ingest all of the logs into Log Analytics Workspace, Sentinel and Defender were configured, and alert rules were put in place.
+
+#### Detection & Analysis
+
+- Malware has been detected on a workstation with the potential to compromise the confidentiality, integrity, or availability of the system and data.
+- Assigned alert to an owner, set the severity to "High", and the status to "Active"
+- Identified the primary user account of the system and all systems affected.
+- A full scan of the system was conducted using up-to-date antivirus software to identify the malware.
+- Verified the authenticity of the alert as a "True Positive".
+- Sent notifications to appropriate personnel as required by the organization's communication policies.
+
+#### Containment, Eradication & Recovery
+
+- The infected system and any additional systems infected by the malware were quarantined.
+- If the malware was unable to be removed or the system sustained damage, the system would have been shut down and disconnected from the network.
+- Depending on organizational policies the affected systems could be restored known clean state, such as a system image or a clean installation of the operating system and applications. Or an up-to-date anti-virus solution could be used to clean the systems. 
+
+#### Post-Incident Activity
+
+- In this simulated case, an employee had downloaded a game that contained malware. 
+- All information was gathered and analyzed to determine the root cause, extent of damage, and effectiveness of the response. 
+- Report disseminated to all stakeholders.
+- Corrective actions are implemented to remediate the root cause.
+- And a lessons-learned review of the incident was conducted.
+
+<br />
 
 ## Conclusion
 
-In this project, a mini honeynet was constructed in Microsoft Azure and log sources were integrated into a Log Analytics workspace. Microsoft Sentinel was employed to trigger alerts and create incidents based on the ingested logs. Additionally, metrics were measured in the insecure environment before security controls were applied, and then again after implementing security measures. It is noteworthy that the number of security events and incidents were drastially reduced after the security controls were applied, demonstrating their effectiveness.
+In this project, I utilized Microsoft Azure to create a honeynet and ingest logs from various resources into a Log Analytics workspace.  Microsoft Sentinel was used to create attack maps, trigger alerts, and incidents.  I then gathered metrics over a 48-hour period to display the significance of properly configuring cloud assets with security in mind. By implementing one section of NIST SP 800-53 r4 I was able to drastically reduce the number of security events and incidents. 
 
-It is worth noting that if the resources within the network were heavily utilized by regular users, it is likely that more security events and alerts may have been generated within the 24-hour period following the implementation of the security controls.
+Had this simulation been linked to an actual organization there would have been many more avenues of attack on the confidentiality, availability, and integrity of the organization's assets.
+
+<br />
